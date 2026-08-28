@@ -11,6 +11,9 @@ export class CompleteTextoService extends DesafioBaseService {
     private readonly _states  = signal<TextoState[]>([]);
     private readonly _feedback = signal<FeedbackCompleteTexto>(undefined);
 
+    /** Referência ao desafio no índice inicial — permite `reiniciar()` voltar do zero. */
+    private desafioOriginal: CompleteTexto | undefined;
+
     public readonly desafio    = this._desafio.asReadonly();
     public readonly feedback   = this._feedback.asReadonly();
 
@@ -22,7 +25,15 @@ export class CompleteTextoService extends DesafioBaseService {
 
     public readonly podeAvancar = computed(() => this._desafio()?.podeAvancar ?? false);
     public readonly podeVoltar  = computed(() => this._desafio()?.podeVoltar  ?? false);
-    public readonly concluido   = computed(() => this._desafio()?.concluido   ?? false);
+
+    /** Concluído = todos os textos foram respondidos E todos corretos. */
+    public readonly concluido = computed(() => {
+        const states = this._states();
+        return states.length > 0
+            && !this.podeAvancar()
+            && states.every(s => s.concluido)
+            && states.every(s => s.resultado === 'correto');
+    });
 
     public readonly progressoReal = computed(() => {
         const states = this._states();
@@ -38,10 +49,17 @@ export class CompleteTextoService extends DesafioBaseService {
     public readonly totalTextos = computed(() => this._states().length);
 
     public iniciar(desafio: CompleteTexto): void {
+        this.desafioOriginal = desafio;
         this._states.set(desafio.textos.map(t => new TextoState(t)));
         this._desafio.set(desafio);
         this._feedback.set(undefined);
         this._progresso.set(0);
+    }
+
+    /** Reinicia as respostas do mesmo desafio do zero — usado quando o jogador não acerta todos os textos. */
+    public reiniciar(): void {
+        if (!this.desafioOriginal) return;
+        this.iniciar(this.desafioOriginal);
     }
 
     public encerrar(): void {
@@ -52,15 +70,17 @@ export class CompleteTextoService extends DesafioBaseService {
     }
 
     public avancar(): void {
-        this._desafio()?.avancar();
+        const atual = this._desafio();
+        if (!atual) return;
+        this._desafio.set(atual.avancar());
         this._feedback.set(undefined);
-        this._desafio.update(d => d); // força reatividade
     }
 
     public voltar(): void {
-        this._desafio()?.voltar();
+        const atual = this._desafio();
+        if (!atual) return;
+        this._desafio.set(atual.voltar());
         this._feedback.set(undefined);
-        this._desafio.update(d => d);
     }
 
     /**
@@ -79,10 +99,11 @@ export class CompleteTextoService extends DesafioBaseService {
             correto ? 'correto' : 'incorreto'
         );
 
-        state.marcarComo(opcoesSelecionadas, correto);
+        const novoState = state.comResultado(opcoesSelecionadas, correto);
+        this._states.update(states => states.map(s => s === state ? novoState : s));
+
         this._feedback.set(resultado);
         this._progresso.set(this.progressoReal());
-        this._states.update(s => [...s]); // força reatividade
         return resultado;
     }
 

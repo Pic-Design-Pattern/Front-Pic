@@ -47,3 +47,91 @@
 *:not(i) {
     font-family: 'DepartureMono', monospace;
 }
+
+/* Coluna de leitura da lição: texto e código compartilham a mesma largura, num fundo
+   claro (o cinza do bee-card padrão fica ruim pra ler parágrafo longo). */
+.licao-coluna {
+    width: 100%;
+    max-width: 65ch;
+    margin-left: auto;
+    margin-right: auto;
+    background: #fdfdfa;
+    padding: 1rem;
+}
+
+/* Lições com tabela precisam de mais que 65ch (3+ colunas) — libera a coluna inteira. */
+.licao-coluna:has(table) {
+    max-width: 100%;
+}
+
+/* Fonte pixelada (DepartureMono, global no app) é ótima pra UI mas ruim pra ler parágrafo
+   longo — corpo do texto usa uma fonte legível normal; títulos mantêm o clima retrô. */
+.licao-conteudo {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1a1a1a;
+}
+
+.licao-conteudo :is(h1, h2, h3, h4, h5, h6) {
+    font-family: 'DepartureMono', monospace;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.licao-conteudo p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+}
+
+.licao-conteudo img {
+    max-width: 100%;
+    image-rendering: pixelated;
+    margin-bottom: 1rem;
+}
+
+.licao-conteudo :is(ul, ol) {
+    margin: 0 0 1rem 1.25rem;
+}
+
+.licao-conteudo li {
+    margin-bottom: 0.25rem;
+}
+
+.licao-conteudo code {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 0.1rem 0.3rem;
+}
+
+.licao-conteudo blockquote {
+    border-left: 2px solid black;
+    padding-left: 0.75rem;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+}
+
+.licao-conteudo table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+}
+
+.licao-conteudo th,
+.licao-conteudo td {
+    border: 2px solid black;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.licao-conteudo th {
+    background: rgba(251, 191, 36, 0.3);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.licao-conteudo tbody tr:nth-child(even) td {
+    background: rgba(0, 0, 0, 0.03);
+}

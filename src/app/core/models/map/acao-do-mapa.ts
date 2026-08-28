@@ -1,34 +1,46 @@
 import { MapActionData } from "../../../../ui/map";
 import { TAMANHO_TILE } from "../../constants/tile";
+import { TipoDesafio } from "../desafios/tipo-desafio";
+import { Recompensa } from "../recompensa/recompensa";
 import { TipoAcao } from "./tipo-acao";
 
 export type AcaoDoMapaProps = {
     id: string;
     tipo: TipoAcao;
     titulo: string;
-    concluida: boolean;
-    concluidaEm?: Date;
     posicaoEmPx: { x: number, y: number }
+    /** Referencia a Loja exibida quando `tipo` é `TipoAcao.Loja`. */
+    lojaId?: string;
+    /** Tipo do desafio exibido quando `tipo` é `TipoAcao.Desafio`. */
+    tipoDesafio?: TipoDesafio;
+    /** Mapa para o qual a ação navega quando `tipo` é `TipoAcao.Onibus` ou `TipoAcao.Aviao`. */
+    mapaDestinoId?: string;
+    /** Desafio aberto quando `tipo` é `TipoAcao.Desafio`. */
+    desafioId?: string;
+    /** Exibe o título embaixo da ação no mapa. Padrão: `false`. */
+    mostrarLabel?: boolean;
+    /** Ids de outras ações do mesmo mapa que precisam estar concluídas antes desta. Desenha uma linha de conexão no mapa. */
+    niveisDependentes?: string[];
+    /** Concedidas uma única vez, na primeira vez que esta fase (`TipoAcao.Desafio`) é concluída. */
+    recompensas?: Recompensa[];
 }
 
 export class AcaoDoMapa {
     constructor (
-        private props: Omit<AcaoDoMapaProps, 'concluida' | 'concluidaEm'> & {
-            concluida?: boolean,
-            concluidaEm?: Date
-        }
-    ) {
-        this.props.concluida = props.concluida ?? false;
-    }
+        private props: AcaoDoMapaProps
+    ) {}
 
     get id() { return this.props.id; }
     get tipo() { return this.props.tipo; }
     get titulo() { return this.props.titulo; }
-    get concluida() { return this.props.concluida; }
-    get concluidaEm() { return this.props.concluidaEm; }
     get posicaoEmPx() { return this.props.posicaoEmPx; }
-
-    public marcarComoConluida() {}
+    get lojaId() { return this.props.lojaId; }
+    get tipoDesafio() { return this.props.tipoDesafio; }
+    get mapaDestinoId() { return this.props.mapaDestinoId; }
+    get desafioId() { return this.props.desafioId; }
+    get mostrarLabel() { return this.props.mostrarLabel ?? false; }
+    get niveisDependentes() { return this.props.niveisDependentes ?? []; }
+    get recompensas() { return this.props.recompensas ?? []; }
 
     public posicaoEmTiles() {
         return {
@@ -43,7 +55,7 @@ export class AcaoDoMapa {
             x: this.posicaoEmTiles().x,
             y: this.posicaoEmTiles().y,
             color: '#fff',
-            label: this.titulo
+            label: this.mostrarLabel ? this.titulo : undefined
         }
     }
     
