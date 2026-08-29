@@ -11,7 +11,7 @@ RUN rm -rf .angular/cache && npm run build
 
 FROM nginx:1.27-alpine
 
-COPY --from=builder /app/dist/root-client/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/client/browser /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
