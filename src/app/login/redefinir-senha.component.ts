@@ -1,6 +1,6 @@
 import { Component, inject, viewChild } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { TextComponent } from "../../ui/typography/text.component";
 import { LinkComponent } from "../../ui/typography/link.component";
 import { IconComponent } from "../../ui/icon/icon.component";
@@ -16,53 +16,33 @@ import { AuthError, AuthService } from "../core/auth/auth.service";
 import { SomService } from "../../services/som/som.service";
 
 @Component({
-    selector: 'bee-cadastro',
+    selector: 'bee-redefinir-senha',
     template: `
     <bee-card class="w-fit max-w-full">
         <bee-card-header>
-            /criar_conta
-            <a bee-button size="small" href="/login">
-                Já tenho conta
-                <bee-icon icon="external-link" />
-            </a>
+            /redefinir_senha
         </bee-card-header>
         <bee-card-content class="flex items-center justify-center">
             <form class="w-full max-w-full md:max-w-xl flex justify-center flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-                <bee-title> Bem vindo à colmeia! </bee-title>
+                <bee-title> Escolha uma nova senha </bee-title>
 
                 <bee-field>
-                    <label bee-label for="input-nome-usuario">Nome de usuário</label>
-                    <input type="text" bee-input id="input-nome-usuario" formControlName="nomeDeUsuario" />
-                </bee-field>
-
-                <bee-field>
-                    <label bee-label for="input-email">Email</label>
-                    <input type="email" bee-input id="input-email" formControlName="email" />
-                </bee-field>
-
-                <bee-field>
-                    <label bee-label for="input-senha">Senha</label>
-                    <input type="password" bee-input id="input-senha" formControlName="senha" />
+                    <label bee-label for="input-senha">Nova senha</label>
+                    <input type="password" bee-input id="input-senha" formControlName="novaSenha" />
                     <bee-text class="text-neutral-500!">Mín. 8 caracteres, com maiúscula, minúscula, número e símbolo.</bee-text>
                 </bee-field>
 
                 <bee-indicator class="w-full!" #indicator />
 
-                <button fluid bee-button type="submit" [disabled]="form.invalid || authService.solicitando()">
-                    <bee-icon icon="plus" />
-                    Cadastrar
+                <button fluid bee-button type="submit" [disabled]="form.invalid || authService.solicitando() || !token">
+                    <bee-icon icon="lock" />
+                    Redefinir senha
                 </button>
 
                 <hr>
 
-                <button fluid bee-button type="button" (click)="onCadastroGoogle()">
-                    <bee-icon icon="external-link" />
-                    Continuar com Google
-                </button>
-
                 <div class="w-full flex flex-row items-center justify-center gap-2">
-                    <bee-text>Já tem uma conta? </bee-text>
-                    <bee-link href="/login" class="text-amber-600!">Entrar</bee-link>
+                    <bee-link href="/login" class="text-amber-600!">Voltar para o login</bee-link>
                 </div>
             </form>
         </bee-card-content>
@@ -75,39 +55,38 @@ import { SomService } from "../../services/som/som.service";
     },
     imports: [TextComponent, LinkComponent, IconComponent, ButtonComponent, LabelComponent, FieldComponent, TitleComponent, BeeCardContentComponent, BeeCardHeaderComponent, BeeCardComponent, InputComponent, ReactiveFormsModule, IndicatorComponent]
 })
-export class CadastroComponent {
+export class RedefinirSenhaComponent {
     protected readonly authService = inject(AuthService);
     private readonly somService = inject(SomService);
     private readonly formBuilder = inject(FormBuilder);
     private readonly router = inject(Router);
+    private readonly route = inject(ActivatedRoute);
 
     private readonly indicator = viewChild<IndicatorComponent>('indicator');
 
+    /** Vem do link do e-mail (redirectTo da tela de esqueci-senha, com ?token=... anexado pelo backend). */
+    protected readonly token = this.route.snapshot.queryParamMap.get('token');
+
     protected readonly form = this.formBuilder.nonNullable.group({
-        nomeDeUsuario: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
-        email: ['', [Validators.required, Validators.email]],
-        senha: ['', [Validators.required, Validators.minLength(8)]],
+        novaSenha: ['', [Validators.required, Validators.minLength(8)]],
     });
 
     protected async onSubmit(): Promise<void> {
-        if (this.form.invalid) return;
+        if (this.form.invalid || !this.token) return;
 
-        const valores = this.form.getRawValue();
+        const { novaSenha } = this.form.getRawValue();
 
         try {
-            await this.authService.cadastrar(valores);
+            await this.authService.redefinirSenha({ novaSenha, token: this.token });
             this.somService.sucesso();
-            this.router.navigateByUrl('/verificar-email');
+            this.indicator()?.show(new Indication({ title: 'Prontinho!', message: 'Senha redefinida. Você já pode entrar.', severity: 'success', ttlInMs: 3000 }));
+            setTimeout(() => this.router.navigateByUrl('/login'), 2000);
         } catch (erro) {
             this.somService.erro();
-            const mensagem = erro instanceof AuthError
-                ? (erro.message || 'Não foi possível criar sua conta.')
-                : 'Não foi possível criar sua conta.';
+            const mensagem = erro instanceof AuthError && erro.code === 'INVALID_TOKEN'
+                ? 'Esse link expirou ou já foi usado. Peça um novo.'
+                : 'Não foi possível redefinir a senha.';
             this.indicator()?.show(new Indication({ title: 'Ops!', message: mensagem, severity: 'danger', ttlInMs: 4000 }));
         }
-    }
-
-    protected async onCadastroGoogle(): Promise<void> {
-        await this.authService.loginComGoogle();
     }
 }
