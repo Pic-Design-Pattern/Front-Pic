@@ -1,0 +1,52 @@
+import { Licao } from "../../../../../models/desafios/licao/licao";
+import { Dificuldade } from "../../../../../models/desafios/dificuldade";
+
+const CONTEUDO = [
+    '# Bridge: variações e quando (não) usar',
+    '',
+    '## Bridge vs. Adapter',
+    '',
+    'Os dois padrões têm uma estrutura parecida (uma classe guarda uma referência a outra e delega chamadas), mas resolvem problemas diferentes — a diferença está na **intenção** e no **momento**:',
+    '',
+    '| | Bridge | Adapter |',
+    '|---|---|---|',
+    '| **Quando é aplicado** | Planejado desde o início do design. | Aplicado depois, sobre código/API já existente. |',
+    '| **Objetivo** | Permitir que duas hierarquias variem de forma independente. | Tornar compatíveis duas interfaces que não foram feitas uma para a outra. |',
+    '| **Quantas implementações** | Geralmente várias, desde o começo. | Geralmente uma — só a que já existe e precisa ser encaixada. |',
+    '',
+    'Na prática: se você está desenhando o sistema do zero e já sabe que vai ter múltiplas variações dos dois lados (vários controles, vários dispositivos), comece com Bridge. Se você está integrando uma biblioteca de terceiros cuja interface não bate com a que seu código espera, isso é Adapter.',
+    '',
+    '## Bridge vs. Strategy',
+    '',
+    'Estruturalmente, Bridge e Strategy também se parecem (composição + delegação). A diferença é de **intenção**: Strategy troca um **algoritmo** (o *como fazer* uma única operação) em tempo de execução; Bridge separa duas **hierarquias inteiras de abstração**, cada uma podendo ter várias camadas de subclasses dos dois lados.',
+    '',
+    '## Um exemplo clássico do mundo real',
+    '',
+    'Drivers de banco de dados (como o JDBC, em Java) são um exemplo clássico de Bridge: o código cliente programa contra uma Abstraction comum (`Connection`, `Statement`), enquanto cada banco (PostgreSQL, MySQL, Oracle...) fornece seu próprio driver — um ConcreteImplementor específico — sem que o código cliente precise saber qual banco está por trás.',
+    '',
+    '## Quando o Bridge faz sentido',
+    '',
+    '- Quando você já enxerga, no design, **duas dimensões de variação** que crescem de forma independente (ex.: tipos de controle × tipos de dispositivo; formas × plataformas de renderização).',
+    '- Quando trocar a implementação **em tempo de execução** é um requisito (ex.: o mesmo controle remoto passando a operar um dispositivo diferente sem recompilar nada).',
+    '- Quando você quer evitar acoplar a interface pública (Abstraction) aos detalhes internos de implementação, permitindo publicar a Abstraction sem expor a implementação.',
+    '',
+    '## Quando evitar',
+    '',
+    '- Quando só existe **uma** implementação e não há sinal de que outra vá aparecer — nesse caso, a indireção da Bridge só adiciona complexidade sem benefício real.',
+    '- Quando as duas hierarquias estão fortemente amarradas por natureza (mudar uma sempre implica mudar a outra) — aí a separação é artificial e não compra flexibilidade nenhuma.',
+    '',
+    '## Resumindo',
+    '',
+    '- Continua valendo o princípio da primeira lição: duas hierarquias (Abstraction e Implementor) ligadas por **composição**, evitando a explosão combinatória de classes.',
+    '- **Bridge** é planejado desde o design; **Adapter** encaixa uma interface já existente; **Strategy** troca um algoritmo isolado, não uma hierarquia inteira.',
+    '- Vale a pena quando há duas dimensões de variação reais — não quando só existe uma implementação, sem sinal de crescer.',
+].join('\n');
+
+export const DESAFIO_LICAO_BRIDGE_003 = new Licao({
+    id: "licao-bridge-003",
+    dificuldade: Dificuldade.Dificil,
+    grupo: "Estruturais",
+    nivel: 3,
+    padrao: "Bridge",
+    conteudoMarkdown: CONTEUDO
+});

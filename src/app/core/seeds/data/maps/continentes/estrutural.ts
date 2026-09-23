@@ -20,7 +20,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Adapter",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "adapter",
-            posicaoEmPx: { x: 256, y: 128 },
+            posicaoEmPx: { x: 368, y: 176 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -28,7 +28,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Bridge",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "bridge",
-            posicaoEmPx: { x: 416, y: 128 },
+            posicaoEmPx: { x: 192, y: 224 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -36,7 +36,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Composite",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "composite",
-            posicaoEmPx: { x: 560, y: 128 },
+            posicaoEmPx: { x: 336, y: 96 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -44,7 +44,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Decorator",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "decorator",
-            posicaoEmPx: { x: 96, y: 320 },
+            posicaoEmPx: { x: 304, y: 256 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -52,7 +52,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Facade",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "facade",
-            posicaoEmPx: { x: 256, y: 320 },
+            posicaoEmPx: { x: 416, y: 256 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -60,7 +60,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Flyweight",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "flyweight",
-            posicaoEmPx: { x: 416, y: 320 },
+            posicaoEmPx: { x: 256, y: 144 },
             mostrarLabel: true
         }),
         new AcaoDoMapa({
@@ -68,7 +68,7 @@ export const CONTINENTE_ESTRUTURAL = new Mapa({
             titulo: "Proxy",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "proxy",
-            posicaoEmPx: { x: 560, y: 320 },
+            posicaoEmPx: { x: 208, y: 304 },
             mostrarLabel: true
         }),
 

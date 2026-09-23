@@ -7,11 +7,10 @@ import { ID_MAPA_INICIAL, MAPA_MUNDI } from "./mapa-mundi";
 
 import { CONTINENTE_CRIACIONAL } from "./continentes/criacaional";
 import { CONTINENTE_COMPORTAMENTAL } from "./continentes/comportamental";
-// O Continente Estrutural ainda fica comentado (não removido) até ter uma região implementada.
-// import { CONTINENTE_ESTRUTURAL } from "./continentes/estrutural";
+import { CONTINENTE_ESTRUTURAL } from "./continentes/estrutural";
 
-// Só Singleton está liberado nesta fase do jogo — as demais regiões ficam comentadas
-// (não removidas) até terem suas fases implementadas / voltarem a ficar disponíveis.
+// Regiões sem fases implementadas ficam comentadas (não removidas) até serem implementadas
+// / voltarem a ficar disponíveis.
 // import { REGIAO_FACTORY } from "./regioes/criacionais/factory";
 // import { REGIAO_PROTOTYPE } from "./regioes/criacionais/prototype";
 // import { REGIAO_BUILDER } from "./regioes/criacionais/builder";
@@ -31,7 +30,7 @@ import { REGIAO_OBSERVER } from "./regioes/comportamentais/observer";
 // import { REGIAO_VISITOR } from "./regioes/comportamentais/visitor";
 
 // import { REGIAO_ADAPTER } from "./regioes/estruturais/adapter";
-// import { REGIAO_BRIDGE } from "./regioes/estruturais/bridge";
+import { REGIAO_BRIDGE } from "./regioes/estruturais/bridge";
 // import { REGIAO_COMPOSITE } from "./regioes/estruturais/composite";
 // import { REGIAO_DECORATOR } from "./regioes/estruturais/decorator";
 // import { REGIAO_FACADE } from "./regioes/estruturais/facade";
@@ -44,10 +43,9 @@ export const MapsSeeds = [
     MAPA_MUNDI,
 
     // ── Continentes: N paradas de ônibus (1 por região) + 1 avião de volta ao Mundi. ──────────
-    // O Estrutural ainda fica comentado acima (não removido) até ter uma região implementada.
     CONTINENTE_CRIACIONAL,
     CONTINENTE_COMPORTAMENTAL,
-    // CONTINENTE_ESTRUTURAL,
+    CONTINENTE_ESTRUTURAL,
 
     // ── Regiões Criacionais ────────────────────────────────────────────────────────────────
     // Só Singleton está liberado nesta fase — as demais regiões ficam comentadas acima
@@ -71,9 +69,9 @@ export const MapsSeeds = [
     // REGIAO_TEMPLATE_METHOD,
     // REGIAO_VISITOR,
 
-    // ── Regiões Estruturais (comentadas — só Singleton está liberado nesta fase) ───────────────
+    // ── Regiões Estruturais (as demais ficam comentadas até terem fases implementadas) ─────────
     // REGIAO_ADAPTER,
-    // REGIAO_BRIDGE,
+    REGIAO_BRIDGE,
     // REGIAO_COMPOSITE,
     // REGIAO_DECORATOR,
     // REGIAO_FACADE,

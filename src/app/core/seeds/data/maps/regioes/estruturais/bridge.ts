@@ -22,7 +22,7 @@ export const REGIAO_BRIDGE = new Mapa({
             titulo: "Voltar ao Continental",
             tipo: TipoAcao.Onibus,
             mapaDestinoId: "continental-estrutural",
-            posicaoEmPx: { x: 224, y: 160 },
+            posicaoEmPx: { x: 224, y: 64 },
             mostrarLabel: true
         }),
 
@@ -84,7 +84,6 @@ export const REGIAO_BRIDGE = new Mapa({
             niveisDependentes: ["rbr-encontre-bug-001"],
             recompensas: [
                 new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 40 }),
-                new Recompensa({ tipo: TipoRecompensa.PassagemRegional })
             ]
         }),
 
@@ -125,7 +124,6 @@ export const REGIAO_BRIDGE = new Mapa({
             niveisDependentes: ["rbr-quiz-001", "rbr-licao-002"],
             recompensas: [
                 new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 60 }),
-                new Recompensa({ tipo: TipoRecompensa.PassagemContinental })
             ]
         }),
 
@@ -136,7 +134,7 @@ export const REGIAO_BRIDGE = new Mapa({
             tipo: TipoAcao.Desafio,
             tipoDesafio: TipoDesafio.EncontreBug,
             desafioId: "eb-bridge-002",
-            posicaoEmPx: { x: 224, y: 320 },
+            posicaoEmPx: { x: 224, y: 160 },
             niveisDependentes: ["rbr-complete-codigo-001"],
             recompensas: [new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 50 })]
         }),
@@ -163,8 +161,7 @@ export const REGIAO_BRIDGE = new Mapa({
             posicaoEmPx: { x: 176, y: 80 },
             niveisDependentes: ["rbr-licao-003"],
             recompensas: [
-                new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 100 }),
-                new Recompensa({ tipo: TipoRecompensa.PassagemRegional })
+                new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 50 }),
             ]
         }),
 
@@ -202,7 +199,8 @@ export const REGIAO_BRIDGE = new Mapa({
             niveisDependentes: ["rbr-complete-texto-002"],
             recompensas: [
                 new Recompensa({ tipo: TipoRecompensa.Dinheiro, valor: 100 }),
-                new Recompensa({ tipo: TipoRecompensa.PassagemRegional })
+                new Recompensa({ tipo: TipoRecompensa.PassagemRegional }),
+                new Recompensa({ tipo: TipoRecompensa.PassagemContinental }),
             ]
         })
     ]
