@@ -77,6 +77,7 @@ export class AuthService {
                 name: payload.nomeDeUsuario,
                 email: payload.email,
                 password: payload.senha,
+                callbackURL: window.location.origin + '/login',
             });
             if (error) throw new AuthError(error);
         } finally {
