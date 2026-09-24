@@ -1,8 +1,6 @@
-import { HttpErrorResponse } from "@angular/common/http";
-import { provideHttpClient } from "@angular/common/http";
 import { TestBed } from "@angular/core/testing";
 import { beforeEach, describe, expect, it } from "vitest";
-import { AuthService } from "../../app/core/auth/auth.service";
+import { AuthError, AuthService } from "../../app/core/auth/auth.service";
 
 function sufixoUnico(): string {
     return `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -10,13 +8,11 @@ function sufixoUnico(): string {
 
 const SENHA_VALIDA = 'SenhaForte#123';
 
-describe('AuthService (integração real com o backend em ../new-back)', () => {
+describe('AuthService (integração real com o backend em ../new-back, better-auth)', () => {
     let authService: AuthService;
 
     beforeEach(() => {
-        TestBed.configureTestingModule({
-            providers: [provideHttpClient()],
-        });
+        TestBed.configureTestingModule({});
         authService = TestBed.inject(AuthService);
     });
 
@@ -31,7 +27,7 @@ describe('AuthService (integração real com o backend em ../new-back)', () => {
         ).resolves.toBeUndefined();
     });
 
-    it('rejeita cadastro com email duplicado', async () => {
+    it('cadastro com email duplicado não revela a duplicidade (proteção contra enumeração)', async () => {
         const sufixo = sufixoUnico();
         const payload = {
             nomeDeUsuario: `teste_${sufixo}`,
@@ -40,20 +36,21 @@ describe('AuthService (integração real com o backend em ../new-back)', () => {
         };
         await authService.cadastrar(payload);
 
-        await expect(authService.cadastrar(payload)).rejects.toMatchObject({
-            status: 409,
-        } satisfies Partial<HttpErrorResponse>);
+        // O better-auth responde como se tivesse dado certo mesmo com email já cadastrado —
+        // é assim que evita vazar quais emails existem na base.
+        await expect(authService.cadastrar(payload)).resolves.toBeUndefined();
     });
 
-    it('loga com credenciais corretas e guarda o token', async () => {
+    it('bloqueia login até o email ser confirmado', async () => {
         const sufixo = sufixoUnico();
         const email = `teste-${sufixo}@femabee.test`;
         await authService.cadastrar({ nomeDeUsuario: `teste_${sufixo}`, email, senha: SENHA_VALIDA });
 
-        await authService.login({ email, senha: SENHA_VALIDA });
+        await expect(
+            authService.login({ email, senha: SENHA_VALIDA }),
+        ).rejects.toMatchObject({ code: 'EMAIL_NOT_VERIFIED' } satisfies Partial<AuthError>);
 
-        expect(authService.token()).toBeTruthy();
-        expect(authService.autenticado()).toBe(true);
+        expect(authService.autenticado()).toBe(false);
     });
 
     it('rejeita login com senha errada', async () => {
@@ -63,6 +60,6 @@ describe('AuthService (integração real com o backend em ../new-back)', () => {
 
         await expect(
             authService.login({ email, senha: 'SenhaErrada#999' }),
-        ).rejects.toMatchObject({ status: 401 });
+        ).rejects.toMatchObject({ code: 'INVALID_EMAIL_OR_PASSWORD' } satisfies Partial<AuthError>);
     });
 });

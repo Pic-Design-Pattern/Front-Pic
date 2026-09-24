@@ -1,10 +1,5 @@
-import { HttpClient } from "@angular/common/http";
-import { computed, inject, Injectable, signal } from "@angular/core";
-import { firstValueFrom } from "rxjs";
-import { API_BASE_URL } from "../constants/api";
-import { RespostaApi } from "../http/resposta-api";
-
-const CHAVE_TOKEN = "femabee_token";
+import { computed, Injectable, signal } from "@angular/core";
+import { authClient } from "./auth-client";
 
 export interface CadastrarUsuarioPayload {
     nomeDeUsuario: string;
@@ -17,51 +12,73 @@ export interface LoginPayload {
     senha: string;
 }
 
+export interface EsqueciSenhaPayload {
+    email: string;
+    redirectTo: string;
+}
+
+export interface RedefinirSenhaPayload {
+    novaSenha: string;
+    token: string;
+}
+
 export interface UsuarioLogado {
     email: string;
     nomeDeUsuario: string;
 }
 
-/** Decodifica o payload de um JWT (sem verificar assinatura — o backend já validou ao emitir). */
-function decodificarPayloadJwt(token: string): UsuarioLogado | null {
-    try {
-        const [, payloadBase64] = token.split('.');
-        const payloadJson = decodeURIComponent(
-            atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))
-                .split('')
-                .map(caractere => '%' + caractere.charCodeAt(0).toString(16).padStart(2, '0'))
-                .join(''),
-        );
-        return JSON.parse(payloadJson);
-    } catch {
-        return null;
+/** Erro de uma operação do better-auth — `code` vem do backend (ex.: EMAIL_NOT_VERIFIED, INVALID_EMAIL_OR_PASSWORD, INVALID_TOKEN). */
+export class AuthError extends Error {
+    readonly code?: string;
+
+    constructor(erro: { code?: string; message?: string }) {
+        super(erro.message ?? 'Erro de autenticação.');
+        this.code = erro.code;
     }
 }
 
-/** Sessão do usuário: cadastro/login/logout contra o backend real, token persistido no localStorage. */
+function paraUsuarioLogado(user: { email: string; name: string } | null | undefined): UsuarioLogado | null {
+    return user ? { email: user.email, nomeDeUsuario: user.name } : null;
+}
+
+/** Sessão do usuário: cadastro/login/logout via better-auth, sessão mantida por cookie HTTP-only (não há mais token manipulável no cliente). */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    private readonly http = inject(HttpClient);
-
-    private readonly _token = signal<string | null>(localStorage.getItem(CHAVE_TOKEN));
+    private readonly _usuario = signal<UsuarioLogado | null>(null);
     private readonly _solicitando = signal(false);
 
-    readonly token = this._token.asReadonly();
     readonly solicitando = this._solicitando.asReadonly();
-    readonly autenticado = computed(() => this._token() !== null);
+    readonly usuarioLogado = this._usuario.asReadonly();
+    readonly autenticado = computed(() => this._usuario() !== null);
 
-    /** Dados do usuário logado direto do token (email, nome de usuário) — evita pedir de novo no resto do app. */
-    readonly usuarioLogado = computed<UsuarioLogado | null>(() => {
-        const token = this._token();
-        return token ? decodificarPayloadJwt(token) : null;
-    });
+    /** Resolve quando a checagem de sessão inicial (cookie existente, se houver) termina — usado pelo authGuard. */
+    readonly pronto: Promise<boolean>;
+
+    constructor() {
+        this.pronto = this.carregarSessaoInicial();
+    }
+
+    private async carregarSessaoInicial(): Promise<boolean> {
+        try {
+            const { data } = await authClient.getSession();
+            this._usuario.set(paraUsuarioLogado(data?.user));
+        } catch {
+            // Backend inalcançável (rede caiu, servidor fora do ar) — trata como não autenticado
+            // em vez de deixar a promise `pronto` rejeitada e travar o authGuard.
+            this._usuario.set(null);
+        }
+        return this._usuario() !== null;
+    }
 
     async cadastrar(payload: CadastrarUsuarioPayload): Promise<void> {
         this._solicitando.set(true);
         try {
-            await firstValueFrom(
-                this.http.post<RespostaApi<undefined>>(`${API_BASE_URL}/autenticacao`, payload),
-            );
+            const { error } = await authClient.signUp.email({
+                name: payload.nomeDeUsuario,
+                email: payload.email,
+                password: payload.senha,
+            });
+            if (error) throw new AuthError(error);
         } finally {
             this._solicitando.set(false);
         }
@@ -70,25 +87,49 @@ export class AuthService {
     async login(payload: LoginPayload): Promise<void> {
         this._solicitando.set(true);
         try {
-            const resposta = await firstValueFrom(
-                this.http.post<RespostaApi<{ token: string }>>(`${API_BASE_URL}/autenticacao/login`, payload),
-            );
-            this.definirToken(resposta.dados.token);
+            const { data, error } = await authClient.signIn.email({
+                email: payload.email,
+                password: payload.senha,
+            });
+            if (error) throw new AuthError(error);
+            this._usuario.set(paraUsuarioLogado(data?.user));
+        } finally {
+            this._solicitando.set(false);
+        }
+    }
+
+    /** Redireciona a página inteira para o consentimento do Google — não há retorno síncrono em caso de sucesso. */
+    async loginComGoogle(): Promise<void> {
+        await authClient.signIn.social({ provider: 'google', callbackURL: 'https://game.femabee.online/abelhas' });
+    }
+
+    async esqueciSenha(payload: EsqueciSenhaPayload): Promise<void> {
+        this._solicitando.set(true);
+        try {
+            const { error } = await authClient.requestPasswordReset(payload);
+            if (error) throw new AuthError(error);
+        } finally {
+            this._solicitando.set(false);
+        }
+    }
+
+    async redefinirSenha(payload: RedefinirSenhaPayload): Promise<void> {
+        this._solicitando.set(true);
+        try {
+            const { error } = await authClient.resetPassword({ newPassword: payload.novaSenha, token: payload.token });
+            if (error) throw new AuthError(error);
         } finally {
             this._solicitando.set(false);
         }
     }
 
     logout(): void {
-        this.definirToken(null);
+        this._usuario.set(null);
+        void authClient.signOut();
     }
 
-    private definirToken(token: string | null): void {
-        this._token.set(token);
-        if (token) {
-            localStorage.setItem(CHAVE_TOKEN, token);
-        } else {
-            localStorage.removeItem(CHAVE_TOKEN);
-        }
+    /** Limpa a sessão local sem chamar o backend — usado pelo interceptor em 401 (a sessão já caiu no servidor). */
+    invalidarSessaoLocal(): void {
+        this._usuario.set(null);
     }
 }
