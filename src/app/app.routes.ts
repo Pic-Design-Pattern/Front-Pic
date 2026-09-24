@@ -12,6 +12,18 @@ export const routes: Routes = [
         loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
     },
     {
+        path: 'verificar-email',
+        loadComponent: () => import('./login/verificar-email.component').then(m => m.VerificarEmailComponent)
+    },
+    {
+        path: 'esqueci-senha',
+        loadComponent: () => import('./login/esqueci-senha.component').then(m => m.EsqueciSenhaComponent)
+    },
+    {
+        path: 'redefinir-senha',
+        loadComponent: () => import('./login/redefinir-senha.component').then(m => m.RedefinirSenhaComponent)
+    },
+    {
         path: 'abelhas',
         canActivate: [authGuard],
         loadComponent: () => import('./abelhas/selecao-abelha.component').then(m => m.SelecaoAbelhaComponent)

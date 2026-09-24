@@ -1,7 +1,6 @@
 import { Component, inject, viewChild } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
-import { HttpErrorResponse } from "@angular/common/http";
 import { TextComponent } from "../../ui/typography/text.component";
 import { LinkComponent } from "../../ui/typography/link.component";
 import { IconComponent } from "../../ui/icon/icon.component";
@@ -13,7 +12,7 @@ import { BeeCardContentComponent, BeeCardHeaderComponent, BeeCardComponent } fro
 import { InputComponent } from "../../ui/input/input.component";
 import { IndicatorComponent } from "../../ui/indicator/indicator.component";
 import { Indication } from "../../ui/indicator/indication";
-import { AuthService } from "../core/auth/auth.service";
+import { AuthError, AuthService } from "../core/auth/auth.service";
 import { SomService } from "../../services/som/som.service";
 
 @Component({
@@ -48,7 +47,16 @@ import { SomService } from "../../services/som/som.service";
                     Entrar
                 </button>
 
+                <div class="w-full flex flex-row justify-end">
+                    <bee-link href="/esqueci-senha" class="text-amber-600!">Esqueci minha senha</bee-link>
+                </div>
+
                 <hr>
+
+                <button fluid bee-button type="button" (click)="onLoginGoogle()">
+                    <bee-icon icon="external-link" />
+                    Continuar com Google
+                </button>
 
                 <div class="w-full flex flex-row items-center justify-center gap-2">
                     <bee-text>Não tem uma conta? </bee-text>
@@ -89,10 +97,21 @@ export class LoginComponent {
             this.router.navigateByUrl('/abelhas');
         } catch (erro) {
             this.somService.erro();
-            const mensagem = erro instanceof HttpErrorResponse
-                ? (erro.error?.mensagem ?? 'Não foi possível entrar.')
+            const mensagem = erro instanceof AuthError
+                ? this.mensagemDoErro(erro)
                 : 'Não foi possível entrar.';
-            this.indicator()?.show(new Indication({ title: 'Ops!', message: mensagem, severity: 'danger', ttlInMs: 3000 }));
+            this.indicator()?.show(new Indication({ title: 'Ops!', message: mensagem, severity: 'danger', ttlInMs: 4000 }));
         }
+    }
+
+    protected async onLoginGoogle(): Promise<void> {
+        await this.authService.loginComGoogle();
+    }
+
+    private mensagemDoErro(erro: AuthError): string {
+        if (erro.code === 'EMAIL_NOT_VERIFIED') {
+            return 'Seu e-mail ainda não foi confirmado. Cheque sua caixa de entrada.';
+        }
+        return 'E-mail ou senha inválidos.';
     }
 }
