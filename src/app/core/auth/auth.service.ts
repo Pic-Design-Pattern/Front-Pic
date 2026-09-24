@@ -100,7 +100,7 @@ export class AuthService {
 
     /** Redireciona a página inteira para o consentimento do Google — não há retorno síncrono em caso de sucesso. */
     async loginComGoogle(): Promise<void> {
-        await authClient.signIn.social({ provider: 'google', callbackURL: '/abelhas' });
+        await authClient.signIn.social({ provider: 'google', callbackURL: 'https://game.femabee.online/abelhas' });
     }
 
     async esqueciSenha(payload: EsqueciSenhaPayload): Promise<void> {
