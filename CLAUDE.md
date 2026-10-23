@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-Package manager is **pnpm** (`packageManager: pnpm@10.30.3` in package.json) — use `pnpm`, not `npm`/`yarn`
+Package manager is **pnpm** (`packageManager: pnpm@10.30.3` in package.json) — use `pnpm`, not `npm`/`yarn`.
 
 - `pnpm start` / `ng serve` — dev server at http://localhost:4200
 - `pnpm build` / `ng build` — production build to `dist/`
